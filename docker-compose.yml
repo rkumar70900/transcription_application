@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./app
+    ports:
+      - "8000:8000"
+    volumes:
+      - /Users/raj/Documents/Recordings:/mnt/pen_drive
+    depends_on:
+      - mongodb
+
+  ui:
+    build: ./streamlit_ui
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit_ui:/app
+      - /Users/raj/Documents/Recordings:/mnt/pen_drive
+    depends_on:
+      - api
+      - mongodb
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

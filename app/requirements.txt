@@ -1,0 +1,6 @@
+numpy<2
+fastapi
+uvicorn
+pymongo
+streamlit
+openai-whisper
