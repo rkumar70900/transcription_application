@@ -5,3 +5,7 @@ class LogItem(BaseModel):
     filename: str
     transcript: str
     title: str
+
+class TranscriptUpdate(BaseModel):
+    transcript_id: str
+    new_transcript: str

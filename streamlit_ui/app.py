@@ -1,15 +1,45 @@
 import streamlit as st
-from pymongo import MongoClient
+import requests
+import time
+import ast
 
-client = MongoClient("mongodb://mongodb:27017/")
-logs = client.transcriptions.logs
+# Load transcripts from FastAPI
+for i in range(10):
+    try:
+        response = requests.get("http://api:8000/transcripts")
+        break
+    except requests.exceptions.ConnectionError:
+        time.sleep(2)
 
-st.title("📝 Daily Logs")
+if response.status_code == 200:
+    transcripts = response.json()
+else:
+    st.error("Could not load transcripts.")
+    st.stop()
 
-entries = list(logs.find())
+transcripts = transcripts['transcripts']
 
-for log in entries:
-    st.subheader(log['title'])
-    st.audio(f"/mnt/pen_drive/{log['filename']}", format="audio/wav")
-    with st.expander("Transcript"):
-        st.write(log['transcript'])
+for transcript in transcripts:
+    with st.expander(f"📄 {transcript['filename']}"):
+        st.markdown(transcript["transcript"])
+
+        if st.button(f"✏️ Edit - {transcript['uuid']}", key=f"edit_{transcript['uuid']}"):
+            st.session_state[f"editing_{transcript['uuid']}"] = True
+
+        if st.session_state.get(f"editing_{transcript['uuid']}", False):
+            new_text = st.text_area(
+                "Edit Transcript",
+                value=transcript["transcript"],
+                key=f"text_{transcript['uuid']}"
+            )
+            if st.button(f"✅ Submit - {transcript['uuid']}", key=f"submit_{transcript['uuid']}"):
+                update_payload = {
+                    "transcript_id": str(transcript["uuid"]),
+                    "new_transcript": new_text
+                }
+                res = requests.put("http://api:8000/update_transcript/", json=update_payload)
+                if res.status_code == 200:
+                    st.success("Transcript updated!")
+                    st.session_state[f"editing_{transcript['uuid']}"] = False
+                else:
+                    st.error("Failed to update transcript.")
