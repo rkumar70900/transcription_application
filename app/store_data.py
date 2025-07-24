@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 import pytz
 
+#mongodb-localhost
+
 cst = pytz.timezone('US/Central')
 
 client = MongoClient("mongodb://mongodb:27017/")
@@ -21,12 +23,13 @@ def store_transcription(file_path, transcript, title):
     db.logs.insert_one(data)
     return data
 
-def update_transcript(transcript_id: str, new_transcript: str):
+def update_transcript(transcript_id: str, new_transcript: str, new_title: str):
     result = db.logs.update_one(
         {"uuid": transcript_id},
-        {"$set": {"transcript": new_transcript, "updated_at": datetime.now(cst)}},
-        upsert=False
+        {"$set": {"transcript": new_transcript, "title": new_title, "updated_at": datetime.now(cst)}},
+        upsert=True
     )
+    print(result)
     return result
 
 def get_all_transcripts():

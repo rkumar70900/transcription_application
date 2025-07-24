@@ -8,4 +8,5 @@ class LogItem(BaseModel):
 
 class TranscriptUpdate(BaseModel):
     transcript_id: str
-    new_transcript: str
+    new_title: str | None = None
+    new_transcript: str | None = None
